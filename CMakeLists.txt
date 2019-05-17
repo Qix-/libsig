@@ -1,0 +1,21 @@
+project (libsig)
+cmake_minimum_required (VERSION 3.2)
+
+include (cmake/cflags.cmake)
+include (cmake/win32-bindir.cmake)
+
+add_library (sig INTERFACE)
+target_include_directories (sig INTERFACE "${CMAKE_CURRENT_LIST_DIR}/include")
+
+if (BUILD_TESTING)
+	enable_testing ()
+	option (BENCHMARK_ENABLE_GTEST_TESTS "" OFF)
+	option (BENCHMARK_ENABLE_TESTING "" OFF)
+	add_subdirectory (ext/benchmark)
+	add_executable (libsig-test test.cc)
+	target_link_libraries (libsig-test PRIVATE sig)
+	add_test (NAME test-libsig COMMAND $<TARGET_FILE:libsig-test>)
+	add_executable (libsig-bench bench.cc)
+	target_link_libraries (libsig-bench PRIVATE benchmark sig)
+	target_include_directories (libsig-bench PRIVATE ext/benchmark/include)
+endif ()

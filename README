@@ -1,0 +1,115 @@
+            _           _          _
+           / /\        /\ \       /\ \
+          / /  \       \ \ \     /  \ \
+         / / /\ \__    /\ \_\   / /\ \_\
+        / / /\ \___\  / /\/_/  / / /\/_/
+        \ \ \ \/___/ / / /    / / / ______
+         \ \ \      / / /    / / / /\_____\
+     _    \ \ \    / / /    / / /  \/____ /
+    /_/\__/ / /___/ / /__  / / /_____/ / /
+    \ \/___/ //\__\/_/___\/ / /______\/ /
+     \_____\/ \/_________/\/___________/
+
+                    LIBSIG
+                 by Josh Junon
+                  MIT license
+
+libsig is a reactive computation library for C++.
+
+OVERVIEW
+
+    Signals are variables that are read
+    from / written to within computations
+    (typically C++ lambdas) that themselves
+    are re-executed if a referenced (read from)
+    variable is changed elsewhere in the program.
+
+    Use-cases range from user interface
+    layouts, to simulations, diagramming,
+    game engines, and beyond.
+
+    libsig is heavily inspired by Adam Haile's
+    S.js[0], and is intended to be a lightweight,
+    performant library with little to no
+    assumptions about data signal types or
+    operations, usable within just about any
+    environment.
+
+BUILDING
+
+    libsig is a header-only library. This is
+    due to the fact that the majority of the
+    library is laden with templates to be
+    data signal type agnostic.
+
+    A CMake configuration is provided by the
+    project; vendoring the code (i.e. via
+    git submodule) and using `add_subdirectory()`
+    should be sufficient when linking against
+    the provided `sig` target.
+
+    Otherwise, add the `include/` directory
+    to your compiler's search path.
+
+USAGE
+
+    In exactly one translation unit, #define
+    the macro `LIBSIG_MAIN` prior to header
+    inclusion. This is mandatory.
+
+    If you have extremely complex computations
+    that would otherwise trigger a runaway
+    clock exception, be sure to define
+    a LIBSIG_RUNAWAYTHRESH higher than
+    the default (see sig.hh for the currently
+    defined default).
+
+    All computations must be created within
+    a libsig::sig_root context. The sig_root
+    constructor itself takes a computation,
+    within which further computations can be
+    created with the provided libsig::S API
+    frontend.
+
+    libsig::sig<T> re-runs dependent computations
+    regardless of the new value of T.
+
+    libsig::val<T> only re-runs dependent
+    computations if !T::operator==(old_value, new_value).
+
+EXAMPLE
+
+    libsig::val<int> age{16};
+    libsig::sig<bool> can_drink;
+
+    libsig::sig_root root{
+        [&] {
+            libsig::S([&] {
+                can_drink = *age >= 21;
+            });
+
+            libsig::S([&]{
+                if (*can_drink) {
+                    std::cout << "Here's a G&T\n";
+                } else {
+                    std::cout << "Not old enough!\n";
+                }
+            });
+        }
+    };
+
+    //-> Not old enough!
+    age = 21;
+    //-> Here's a G&T
+    age = 21;
+    // <21 == 21, no update due to val>
+
+
+LICENSE
+
+    libsig is copyright (c) 2019 by Josh Junon,
+    and released under the MIT License.
+
+REFERENCES
+
+    [0] https://github.com/adamhaile/s.js
