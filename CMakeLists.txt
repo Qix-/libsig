@@ -1,11 +1,9 @@
 project (libsig)
 cmake_minimum_required (VERSION 3.2)
 
-include (cmake/cflags.cmake)
-include (cmake/win32-bindir.cmake)
-
 add_library (sig INTERFACE)
 target_include_directories (sig INTERFACE "${CMAKE_CURRENT_LIST_DIR}/include")
+target_compile_features (sig INTERFACE cxx_std_11)
 
 if (BUILD_TESTING)
 	enable_testing ()
@@ -18,4 +16,11 @@ if (BUILD_TESTING)
 	add_executable (libsig-bench bench.cc)
 	target_link_libraries (libsig-bench PRIVATE benchmark sig)
 	target_include_directories (libsig-bench PRIVATE ext/benchmark/include)
+
+	target_compile_options (libsig-test PRIVATE
+		$<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic -Werror>
+	)
+	target_compile_options (libsig-bench PRIVATE
+		$<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic -Werror>
+	)
 endif ()
