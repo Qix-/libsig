@@ -85,11 +85,11 @@ EXAMPLE
     libsig::sig_root root{
         [&] {
             libsig::S([&] {
-                can_drink = *age >= 21;
+                can_drink = age >= 21;
             });
 
             libsig::S([&]{
-                if (*can_drink) {
+                if (can_drink) {
                     std::cout << "Here's a G&T\n";
                 } else {
                     std::cout << "Not old enough!\n";
